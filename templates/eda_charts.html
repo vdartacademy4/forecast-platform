@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}EDA Charts{% endblock %}
+{% block extra_css %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+.chart-box { min-height: 380px; border-radius: 0.75rem; }
+.chart-wrapper { width: 100%; height: 400px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('eda.eda_dashboard', dataset_id=dataset.id) }}">EDA Dashboard</a></li>
+            <li class="breadcrumb-item active">Charts</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold"><i class="fas fa-images text-primary me-2"></i>Chart Gallery</h2>
+            <p class="text-muted mb-0">{{ dataset.file_name }} &mdash; All generated visualizations</p>
+        </div>
+        <a href="{{ url_for('eda.eda_dashboard', dataset_id=dataset.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+
+    {% set chart_keys = charts.keys() | list %}
+    {% if chart_keys | length == 0 %}
+    <div class="card shadow border-0">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-chart-bar fa-4x mb-3" style="opacity:0.3;"></i>
+            <h5 class="text-muted">No charts to display</h5>
+            <p class="text-muted small">Charts will appear here after running EDA.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set corr_chart = charts.get('correlation', {}) %}
+    {% if corr_chart and corr_chart.get('plotly') %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold"><i class="fas fa-th text-primary me-2"></i>Correlation Heatmap</h5></div>
+        <div class="card-body"><div id="chart-correlation" class="chart-wrapper"></div></div>
+    </div>
+    {% endif %}
+
+    {% set missing_chart = charts.get('missing', {}) %}
+    {% if missing_chart and missing_chart.get('plotly') %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Missing Values</h5></div>
+        <div class="card-body"><div id="chart-missing" class="chart-wrapper"></div></div>
+    </div>
+    {% endif %}
+
+    {% set trend_chart = charts.get('trend', {}) %}
+    {% if trend_chart and trend_chart.get('plotly') %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-info"><i class="fas fa-chart-line me-2"></i>Trend Analysis</h5></div>
+        <div class="card-body"><div id="chart-trend" class="chart-wrapper"></div></div>
+    </div>
+    {% endif %}
+
+    {% set histograms = charts.get('histograms', []) %}
+    {% if histograms %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold"><i class="fas fa-chart-bar text-primary me-2"></i>Histograms</h5></div>
+        <div class="card-body">
+            <div class="row">
+                {% for h in histograms %}
+                <div class="col-md-6 mb-3">
+                    <div id="chart-hist-{{ loop.index }}" class="chart-wrapper"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set boxplots = charts.get('boxplots', []) %}
+    {% if boxplots %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-warning"><i class="fas fa-chart-box me-2"></i>Box Plots</h5></div>
+        <div class="card-body">
+            <div class="row">
+                {% for b in boxplots %}
+                <div class="col-md-6 mb-3">
+                    <div id="chart-box-{{ loop.index }}" class="chart-wrapper"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set bars = charts.get('bar', []) %}
+    {% if bars %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-success"><i class="fas fa-chart-simple me-2"></i>Bar Charts</h5></div>
+        <div class="card-body">
+            <div class="row">
+                {% for b in bars %}
+                <div class="col-md-6 mb-3">
+                    <div id="chart-bar-{{ loop.index }}" class="chart-wrapper"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set pies = charts.get('pie', []) %}
+    {% if pies %}
+    <div class="card shadow border-0 mb-4 chart-box">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-info"><i class="fas fa-chart-pie me-2"></i>Pie Charts</h5></div>
+        <div class="card-body">
+            <div class="row">
+                {% for p in pies %}
+                <div class="col-md-6 mb-3">
+                    <div id="chart-pie-{{ loop.index }}" class="chart-wrapper"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function renderPlotly(elementId, chartData) {
+    if (chartData && chartData.data) {
+        Plotly.newPlot(elementId, chartData.data, chartData.layout || {}, {responsive: true});
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var charts = {{ charts | tojson }};
+    if (charts.correlation && charts.correlation.plotly) {
+        renderPlotly('chart-correlation', charts.correlation.plotly);
+    }
+    if (charts.missing && charts.missing.plotly) {
+        renderPlotly('chart-missing', charts.missing.plotly);
+    }
+    if (charts.trend && charts.trend.plotly) {
+        renderPlotly('chart-trend', charts.trend.plotly);
+    }
+    if (charts.histograms) {
+        charts.histograms.forEach(function(h, i) {
+            if (h.plotly) renderPlotly('chart-hist-' + (i+1), h.plotly);
+        });
+    }
+    if (charts.boxplots) {
+        charts.boxplots.forEach(function(b, i) {
+            if (b.plotly) renderPlotly('chart-box-' + (i+1), b.plotly);
+        });
+    }
+    if (charts.bar) {
+        charts.bar.forEach(function(b, i) {
+            if (b.plotly) renderPlotly('chart-bar-' + (i+1), b.plotly);
+        });
+    }
+    if (charts.pie) {
+        charts.pie.forEach(function(p, i) {
+            if (p.plotly) renderPlotly('chart-pie-' + (i+1), p.plotly);
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Manual EDA{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('eda.mode_selection', dataset_id=dataset.id) }}">EDA Mode</a></li>
+            <li class="breadcrumb-item active">Manual EDA</li>
+        </ol>
+    </nav>
+
+    <div class="text-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-sliders-h text-success me-2"></i>Manual EDA Configuration</h2>
+        <p class="text-muted">Select the analyses and visualizations you want to generate for <strong>{{ dataset.file_name }}</strong></p>
+    </div>
+
+    <form method="POST" action="{{ url_for('eda.manual_eda', dataset_id=dataset.id) }}" id="manualEdaForm">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-calculator me-2"></i>Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">Select statistical measures to compute:</p>
+                        {% for stat in ['count', 'mean', 'median', 'mode', 'std', 'variance', 'min', 'max', 'q1', 'q2', 'q3', 'iqr', 'skewness', 'kurtosis'] %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="statistics" value="{{ stat }}" id="stat_{{ stat }}" checked>
+                            <label class="form-check-label" for="stat_{{ stat }}">{{ stat|capitalize }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-warning"><i class="fas fa-chart-bar me-2"></i>Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">Select analyses to perform:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="analysis" value="missing" id="an_missing" checked>
+                            <label class="form-check-label" for="an_missing">Missing Value Analysis</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="analysis" value="correlation" id="an_corr" checked>
+                            <label class="form-check-label" for="an_corr">Correlation Analysis</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="analysis" value="outlier" id="an_outlier" checked>
+                            <label class="form-check-label" for="an_outlier">Outlier Detection</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="analysis" value="trend" id="an_trend" checked>
+                            <label class="form-check-label" for="an_trend">Trend Analysis</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="analysis" value="seasonality" id="an_season">
+                            <label class="form-check-label" for="an_season">Seasonality Analysis</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-success"><i class="fas fa-images me-2"></i>Visualizations</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">Select charts to generate:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="histogram" id="ch_hist" checked>
+                            <label class="form-check-label" for="ch_hist">Histogram</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="boxplot" id="ch_box" checked>
+                            <label class="form-check-label" for="ch_box">Box Plot</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="correlation_heatmap" id="ch_heatmap" checked>
+                            <label class="form-check-label" for="ch_heatmap">Correlation Heatmap</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="line_chart" id="ch_line" checked>
+                            <label class="form-check-label" for="ch_line">Line Chart</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="bar_chart" id="ch_bar" checked>
+                            <label class="form-check-label" for="ch_bar">Bar Chart</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="charts" value="pie_chart" id="ch_pie" checked>
+                            <label class="form-check-label" for="ch_pie">Pie Chart</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success btn-lg px-5">
+                <i class="fas fa-cogs me-2"></i>Generate Analysis
+            </button>
+            <a href="{{ url_for('eda.mode_selection', dataset_id=dataset.id) }}" class="btn btn-outline-secondary btn-lg ms-2">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('manualEdaForm').addEventListener('submit', function(e) {
+    const checked = this.querySelectorAll('input[type=checkbox]:checked');
+    if (checked.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one analysis option.');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+Rank,Model Name,Category,Status,MAE,RMSE,MAPE,R2 Score,Training Time
+#1,ARIMA,Traditional,success,0.8313,0.9736,99.99%,-0.0,N/A
+#2,SARIMA,Traditional,success,0.8323,0.9739,122.24%,-0.0007,N/A
+#3,ExponentialSmoothing,Traditional,success,0.8313,0.9743,127.56%,-0.0015,N/A
+-,LinearRegression,Machine Learning,failed,N/A,N/A,N/A,N/A,N/A
+-,RandomForest,Machine Learning,failed,N/A,N/A,N/A,N/A,N/A
+-,XGBoost,Machine Learning,failed,N/A,N/A,N/A,N/A,N/A
+-,LSTM,Deep Learning,failed,N/A,N/A,N/A,N/A,N/A

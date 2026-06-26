@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="font-size: 1.75rem;">
+                <i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard
+            </h2>
+            <p class="text-muted mb-0">Welcome back, <strong>{{ username }}</strong>. Here's your forecasting overview.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <div class="stat-card-value">{{ total_datasets }}</div>
+                        <div class="stat-card-label">Total Datasets</div>
+                    </div>
+                    <div class="stat-card-icon" style="background:rgba(13,110,253,0.1);color:var(--primary);">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('dataset.list_datasets') }}" class="text-decoration-none small">View all <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <div class="stat-card-value">{{ validated_count }}</div>
+                        <div class="stat-card-label">Validated</div>
+                    </div>
+                    <div class="stat-card-icon" style="background:rgba(25,135,84,0.1);color:var(--success);">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="small text-muted">{{ '%.0f'|format((validated_count / total_datasets * 100) if total_datasets > 0 else 0) }}% of datasets</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <div class="stat-card-value">{{ forecast_count }}</div>
+                        <div class="stat-card-label">Total Forecasts</div>
+                    </div>
+                    <div class="stat-card-icon" style="background:rgba(13,202,240,0.1);color:var(--info);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="small text-muted">{{ best_models|length }} unique best models</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <div class="stat-card-value">{{ analysis_count }}</div>
+                        <div class="stat-card-label">Analyses Completed</div>
+                    </div>
+                    <div class="stat-card-icon" style="background:rgba(255,193,7,0.1);color:var(--warning);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="small text-muted">Full workflows</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <a href="{{ url_for('dataset.upload') }}" class="quick-action-card">
+                <div class="quick-action-icon" style="background:rgba(13,110,253,0.1);color:var(--primary);">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="quick-action-title">Upload Dataset</div>
+                <p class="quick-action-desc">Import CSV, XLS, or XLSX files</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('dataset.list_datasets') }}" class="quick-action-card">
+                <div class="quick-action-icon" style="background:rgba(25,135,84,0.1);color:var(--success);">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="quick-action-title">View Analytics</div>
+                <p class="quick-action-desc">Browse your datasets and reports</p>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('dataset.list_datasets') }}" class="quick-action-card">
+                <div class="quick-action-icon" style="background:rgba(13,202,240,0.1);color:var(--info);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="quick-action-title">Generate Report</div>
+                <p class="quick-action-desc">{% if total_datasets > 0 %}View your datasets{% else %}Upload a dataset first{% endif %}</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-history text-primary me-2"></i>Recent Analyses
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if analyses %}
+                    <ul class="activity-feed">
+                        {% for a in analyses %}
+                        <li class="activity-item">
+                            <div class="activity-icon" style="background:rgba(25,135,84,0.1);color:var(--success);">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-action">
+                                    <a href="{{ url_for('reports.view_report', dataset_id=a.dataset_id) }}" class="text-decoration-none">{{ a.dataset_name }}</a>
+                                </div>
+                                <div class="activity-details">
+                                    Best: {{ a.best_model or 'N/A' }} &middot; Time: {{ a.total_workflow_time }} min
+                                </div>
+                            </div>
+                            <div class="activity-time">
+                                {{ a.created_at.strftime('%b %d, %Y') if a.created_at else '' }}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-4x mb-3" style="opacity:0.3;"></i>
+                        <p class="mb-0">No completed analyses yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-trophy text-warning me-2"></i>Best Models Used
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if best_models %}
+                    <ul class="activity-feed">
+                        {% for bm in best_models %}
+                        <li class="activity-item">
+                            <div class="activity-icon" style="background:rgba(255,193,7,0.1);color:var(--warning);">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-action">{{ bm.best_model or 'N/A' }}</div>
+                                <div class="activity-details">
+                                    Used in {{ bm.count }} analysis{% if bm.count > 1 %}es{% endif %}
+                                </div>
+                            </div>
+                            <div class="activity-time">
+                                <span class="badge bg-warning text-dark">{{ bm.best_model_category or '' }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-trophy fa-4x mb-3" style="opacity:0.3;"></i>
+                        <p class="mb-0">No best models recorded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-clock text-primary me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if activities %}
+                    <ul class="activity-feed">
+                        {% for act in activities %}
+                        <li class="activity-item">
+                            <div class="activity-icon"
+                                style="background:{{ 'rgba(13,110,253,0.1)' if 'upload' in act.action else 'rgba(25,135,84,0.1)' if 'valid' in act.action or 'completed' in act.action else 'rgba(13,202,240,0.1)' }};color:{{ 'var(--primary)' if 'upload' in act.action else 'var(--success)' if 'valid' in act.action or 'completed' in act.action else 'var(--info)' }};">
+                                <i class="fas fa-{{ 'upload' if 'upload' in act.action else 'check-circle' if 'valid' in act.action else 'chart-pie' if 'eda' in act.action else 'trash' if 'deleted' in act.action else 'info-circle' }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-action">
+                                    {% if 'upload' in act.action %}Dataset Uploaded
+                                    {% elif 'valid' in act.action %}Validation {{ 'Completed' if 'completed' in act.action else 'Failed' }}
+                                    {% elif 'eda_auto' in act.action %}Automatic EDA Completed
+                                    {% elif 'eda_manual' in act.action %}Manual EDA Completed
+                                    {% elif 'deleted' in act.action %}Dataset Deleted
+                                    {% elif 'workflow' in act.action %}Workflow Completed
+                                    {% elif 'report' in act.action %}Report Viewed
+                                    {% else %}{{ act.action }}{% endif %}
+                                </div>
+                                {% if act.details %}
+                                <div class="activity-details">{{ act.details }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="activity-time">
+                                {% if act.timestamp %}
+                                {{ act.timestamp.strftime('%b %d, %H:%M') if act.timestamp is string else act.timestamp }}
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-4x mb-3" style="opacity:0.3;"></i>
+                        <p class="mb-1">No recent activity to display.</p>
+                        <p class="small">Start by uploading a dataset to begin your forecasting journey.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

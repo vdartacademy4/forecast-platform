@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block title %}Report Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+.section-card { border-radius: 0.75rem; border: 1px solid #e9ecef; transition: box-shadow 0.2s; }
+.section-card:hover { box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.06); }
+.stat-box { padding: 1.25rem; border-radius: 0.75rem; background: white; border: 1px solid #e9ecef; text-align: center; height: 100%; }
+.stat-box h3 { font-weight: 700; margin-bottom: 0.25rem; font-size: 1.4rem; }
+.stat-box small { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; }
+.insight-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; border-radius: 2rem; font-size: 0.85rem; }
+.download-btn-group { display: flex; gap: 0.5rem; }
+.action-card { border-radius: 1rem; transition: all 0.2s; border: 1px solid #e9ecef; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+.action-card:hover { transform: translateY(-3px); box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); text-decoration: none; color: inherit; }
+.action-card .card-body { padding: 1.5rem; text-align: center; }
+.action-card i { font-size: 2rem; margin-bottom: 0.75rem; }
+</style>
+{% endblock %}
+{% block content %}
+{% set r = report %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="fas fa-file-alt text-primary me-2"></i>Reports Dashboard</h3>
+            <p class="text-muted mb-0">{{ dataset.file_name }} &mdash; {{ r.get('generated_at', '') }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='pdf') }}" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i>PDF
+            </a>
+            <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='csv') }}" class="btn btn-success">
+                <i class="fas fa-file-csv me-1"></i>CSV
+            </a>
+            <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='xlsx') }}" class="btn btn-primary">
+                <i class="fas fa-file-excel me-1"></i>Excel
+            </a>
+            <a href="{{ url_for('reports.workflow_completed', dataset_id=dataset.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-check-circle me-1"></i>Completion Page
+            </a>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            {% if prev_url %}
+            <a href="{{ prev_url }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Comparison
+            </a>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{{ url_for('reports.workflow_completed', dataset_id=dataset.id) }}" class="btn btn-primary">
+                <i class="fas fa-check-circle me-1"></i>Workflow Complete
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-box"><h3 class="text-primary">{{ dataset.file_name }}</h3><small>Dataset Name</small></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box"><h3 class="text-info">{{ r.get('dataset_rows', 0) }}</h3><small>Total Rows</small></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box"><h3 class="text-success">{{ r.get('dataset_columns', 0) }}</h3><small>Total Columns</small></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box"><h3 class="text-warning">{{ r.get('upload_date', 'N/A') }}</h3><small>Uploaded Date</small></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card section-card h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-clipboard-check text-primary me-2"></i>Validation Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% set v = r.get('validation') %}
+                    {% if v %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Status</span>
+                        <span class="badge bg-{{ 'success' if v.get('validation_status') == 'completed' else 'warning' }}">{{ v.get('validation_status', 'N/A') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Errors Found</span>
+                        <span class="fw-bold">{{ v.get('duplicate_rows', 0) + v.get('empty_columns', [])|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Missing Values</span>
+                        <span class="fw-bold">{{ v.get('missing_values', [])|length }} columns</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No validation data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card section-card h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-chart-pie text-success me-2"></i>EDA Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% set ed = r.get('eda') %}
+                    {% if ed %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Data Quality Score</span>
+                        <span class="fw-bold">{{ ed.get('data_quality_score', 'N/A') }}/100</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Missing Values</span>
+                        <span class="fw-bold">{{ ed.get('missing_values', 'N/A') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Charts Generated</span>
+                        <span class="fw-bold">{{ ed.get('total_charts', 0) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Numeric / Categorical / Date</span>
+                        <span class="fw-bold">{{ v.get('numeric_columns', [])|length if v else 0 }} / {{ v.get('categorical_columns', [])|length if v else 0 }} / {{ v.get('date_columns', [])|length if v else 0 }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No EDA data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card section-card h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-filter text-warning me-2"></i>Preprocessing Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% set p = r.get('preprocessing') %}
+                    {% if p %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Missing Value Method</span>
+                        <span class="fw-bold">{{ (p.get('missing_method') or 'N/A')|replace('_', ' ')|title }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Outlier Method</span>
+                        <span class="fw-bold">{{ (p.get('outlier_method') or 'N/A')|replace('_', ' ')|title }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Encoding</span>
+                        <span class="fw-bold">{{ (p.get('encoding_method') or 'N/A')|replace('_', ' ')|title }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Scaling</span>
+                        <span class="fw-bold">{{ (p.get('scaling_method') or 'N/A')|replace('_', ' ')|title }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No preprocessing data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card section-card h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-chart-line text-info me-2"></i>Forecast Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Forecast Model</span>
+                        <span class="fw-bold">{{ r.get('forecast_model', 'N/A') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Forecast Horizon</span>
+                        <span class="fw-bold">{{ r.get('forecast_horizon', 'N/A') }} periods</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Target Column</span>
+                        <span class="fw-bold">{{ r.get('target_column', 'N/A') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Date Column</span>
+                        <span class="fw-bold">{{ r.get('date_column', 'N/A') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card section-card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-balance-scale text-primary me-2"></i>Comparison Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <h3 class="text-warning">{{ r.get('best_model', 'N/A') }}</h3>
+                                <small>Best Model</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <h3 class="text-info">{{ r.get('best_rmse', 'N/A') }}</h3>
+                                <small>RMSE</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <h3 class="text-success">{{ r.get('best_mae', 'N/A') }}</h3>
+                                <small>MAE</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ r.get('best_mape', 'N/A') }}</h3>
+                                <small>MAPE</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stat-box">
+                                <h3 class="text-danger">{{ r.get('best_r2', 'N/A') }}</h3>
+                                <small>R&#178; Score</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card section-card mt-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Smart Insights</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                {% for insight in r.get('smart_insights', []) %}
+                <div class="col-md-6">
+                    <div class="insight-badge bg-light w-100 text-start">
+                        <i class="fas fa-check-circle text-success flex-shrink-0"></i>
+                        <span>{{ insight }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <p class="text-muted text-center py-3 mb-0">No insights available.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card section-card mt-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-download text-success me-2"></i>Download Center</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='pdf') }}" class="btn btn-outline-danger w-100 py-3">
+                        <i class="fas fa-file-pdf fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold">PDF Report</span><br>
+                        <small class="text-muted">Complete formatted report</small>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='csv') }}" class="btn btn-outline-success w-100 py-3">
+                        <i class="fas fa-file-csv fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold">CSV Report</span><br>
+                        <small class="text-muted">Raw data export</small>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('reports.download_report', dataset_id=dataset.id, file_format='xlsx') }}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="fas fa-file-excel fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold">Excel Report</span><br>
+                        <small class="text-muted">Multi-sheet workbook</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

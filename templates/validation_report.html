@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}Validation Report{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item active">Validation Report</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">
+                <i class="fas fa-clipboard-check text-primary me-2"></i>Validation Report
+            </h2>
+            <p class="text-muted mb-0">
+                Dataset: <strong>{{ dataset.file_name }}</strong>
+                &mdash; {{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') if report.created_at else '' }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary mb-0">{{ report.total_rows }}</h3>
+                    <small class="text-muted">Total Rows</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-info mb-0">{{ report.total_columns }}</h3>
+                    <small class="text-muted">Total Columns</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-warning mb-0">{{ total_missing }}</h3>
+                    <small class="text-muted">Missing Values</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-{{ 'success' if issues_count == 0 else 'danger' }} border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-{{ 'success' if issues_count == 0 else 'danger' }} mb-0">{{ issues_count }}</h3>
+                    <small class="text-muted">Issues Found</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% if missing_values %}
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Missing Values
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="px-3">Column</th>
+                                    <th class="text-center px-3">Count</th>
+                                    <th class="text-end px-3">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mv in missing_values %}
+                                <tr>
+                                    <td class="px-3">{{ mv.column }}</td>
+                                    <td class="text-center px-3">{{ mv.count }}</td>
+                                    <td class="text-end px-3">
+                                        <span class="badge bg-{{ 'danger' if mv.percentage > 20 else 'warning' if mv.percentage > 5 else 'secondary' }}">
+                                            {{ mv.percentage }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if report.duplicate_rows > 0 %}
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-danger">
+                        <i class="fas fa-copy me-2"></i>Duplicate Rows
+                    </h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <h2 class="fw-bold text-danger">{{ report.duplicate_rows }}</h2>
+                    <p class="text-muted mb-0">duplicate row{% if report.duplicate_rows != 1 %}s{% endif %} detected</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if empty_columns %}
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-danger">
+                        <i class="fas fa-ban me-2"></i>Empty Columns
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for col in empty_columns %}
+                        <span class="badge bg-danger">{{ col }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if duplicate_columns %}
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-warning">
+                        <i class="fas fa-columns me-2"></i>Duplicate Columns
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for group in duplicate_columns %}
+                    <div class="mb-2">
+                        <span class="badge bg-warning text-dark me-1">Group {{ loop.index }}</span>
+                        {% for col in group %}
+                        <code>{{ col }}</code>{% if not loop.last %} <span class="text-muted">=</span> {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-success">
+                        <i class="fas fa-tag me-2"></i>Detected Column Types
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if numeric_columns %}
+                    <h6 class="text-muted small text-uppercase">Numeric ({{ numeric_columns|length }})</h6>
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        {% for col in numeric_columns %}
+                        <span class="badge bg-primary">{{ col }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if categorical_columns %}
+                    <h6 class="text-muted small text-uppercase">Categorical ({{ categorical_columns|length }})</h6>
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        {% for col in categorical_columns %}
+                        <span class="badge bg-success">{{ col }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if date_columns %}
+                    <h6 class="text-muted small text-uppercase">Date ({{ date_columns|length }})</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for col in date_columns %}
+                        <span class="badge bg-info text-dark">{{ col }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if not numeric_columns and not categorical_columns and not date_columns %}
+                    <p class="text-muted text-center py-3 mb-0">No columns detected.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-secondary">
+                        <i class="fas fa-chart-pie me-2"></i>Dataset Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Dataset Size</span>
+                            <strong>{{ report.dataset_size_mb }} MB</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Numeric Columns</span>
+                            <strong>{{ numeric_columns|length }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Categorical Columns</span>
+                            <strong>{{ categorical_columns|length }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Date Columns</span>
+                            <strong>{{ date_columns|length }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Validation Status</span>
+                            {% if report.validation_status == 'completed' %}
+                            <span class="badge bg-success rounded-pill px-3">Completed</span>
+                            {% elif report.validation_status == 'failed' %}
+                            <span class="badge bg-danger rounded-pill px-3">Failed</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark rounded-pill px-3">Pending</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if issues_count == 0 %}
+    <div class="alert alert-success mt-4">
+        <i class="fas fa-check-circle me-2"></i>
+        <strong>Clean dataset!</strong> No validation issues were found.
+    </div>
+    {% else %}
+    <div class="alert alert-warning mt-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>{{ issues_count }} issue{% if issues_count != 1 %}s{% endif %} found.</strong>
+        Consider preprocessing to clean the data before forecasting.
+    </div>
+    {% endif %}
+
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#validationRerunModal">
+            <i class="fas fa-redo me-1"></i>Run Again
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="validationRerunModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Re-run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-redo fa-3x text-warning mb-3"></i>
+                <p class="fw-bold mb-2">This will overwrite the existing results.</p>
+                <p class="text-muted small mb-0">All current validation results will be lost. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('dataset.preview', dataset_id=dataset.id) }}" class="btn btn-danger">
+                    <i class="fas fa-redo me-1"></i>Run Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

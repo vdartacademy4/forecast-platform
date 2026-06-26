@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}EDA Summary{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('eda.eda_dashboard', dataset_id=dataset.id) }}">EDA Dashboard</a></li>
+            <li class="breadcrumb-item active">Summary</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-file-alt text-primary me-2"></i>EDA Summary</h2>
+        <a href="{{ url_for('eda.eda_dashboard', dataset_id=dataset.id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Full Dashboard
+        </a>
+    </div>
+
+    {% set overview = results.get('dataset_overview', {}) %}
+    {% set stats = results.get('statistics', {}) %}
+    {% set missing = results.get('missing_analysis', {}) %}
+    {% set corr = results.get('correlation', {}) %}
+    {% set outliers = results.get('outliers_iqr', {}) %}
+    {% set cat = results.get('categorical_analysis', {}) %}
+    {% set ts = results.get('timeseries', {}) %}
+    {% set insights = results.get('feature_insights', {}) %}
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-clipboard-list text-primary me-2"></i>Dataset Overview</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3"><div class="p-3 bg-light rounded text-center"><h4 class="fw-bold mb-0">{{ overview.get('rows', 0) }}</h4><small class="text-muted">Rows</small></div></div>
+                <div class="col-md-3"><div class="p-3 bg-light rounded text-center"><h4 class="fw-bold mb-0">{{ overview.get('columns', 0) }}</h4><small class="text-muted">Columns</small></div></div>
+                <div class="col-md-3"><div class="p-3 bg-light rounded text-center"><h4 class="fw-bold mb-0">{{ overview.get('numeric_count', 0) }}</h4><small class="text-muted">Numeric</small></div></div>
+                <div class="col-md-3"><div class="p-3 bg-light rounded text-center"><h4 class="fw-bold mb-0">{{ overview.get('categorical_count', 0) }}</h4><small class="text-muted">Categorical</small></div></div>
+            </div>
+        </div>
+    </div>
+
+    {% if stats %}
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold"><i class="fas fa-calculator text-primary me-2"></i>Statistics Snapshot</h5></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead class="table-light"><tr><th>Column</th><th>Mean</th><th>Median</th><th>Std</th><th>Min</th><th>Max</th></tr></thead>
+                    <tbody>
+                        {% for col, s in stats.items() %}
+                        <tr><td><strong>{{ col }}</strong></td><td>{{ s.mean }}</td><td>{{ s.median }}</td><td>{{ s.std }}</td><td>{{ s.min }}</td><td>{{ s.max }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if missing and missing.get('columns') %}
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Missing Values</h5></div>
+        <div class="card-body">
+            <p><strong>{{ missing.total_missing }}</strong> missing values out of <strong>{{ missing.total_cells }}</strong> total cells ({{ missing.overall_pct }}%)</p>
+            <div class="d-flex flex-wrap gap-2">
+                {% for m in missing.columns %}
+                <span class="badge bg-{{ 'danger' if m.percentage > 20 else 'warning' if m.percentage > 5 else 'secondary' }} fs-6">
+                    {{ m.column }}: {{ m.count }} ({{ m.percentage }}%)
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if corr and corr.get('high_corr') %}
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-info"><i class="fas fa-link me-2"></i>Strong Correlations (|r| >= 0.7)</h5></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead><tr><th>Feature 1</th><th>Feature 2</th><th>Correlation</th></tr></thead>
+                    <tbody>
+                        {% for p in corr.high_corr[:10] %}
+                        <tr><td>{{ p.col1 }}</td><td>{{ p.col2 }}</td><td><strong>{{ p.value }}</strong></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if outliers %}
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-warning"><i class="fas fa-exclamation-circle me-2"></i>Outliers</h5></div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                {% for col, o in outliers.items() %}
+                <span class="badge bg-{{ 'danger' if o.outlier_pct > 5 else 'warning' if o.outlier_pct > 0 else 'secondary' }} fs-6">
+                    {{ col }}: {{ o.outlier_count }} outliers ({{ o.outlier_pct }}%)
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if insights %}
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Key Insights</h5></div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                {% if insights.get('potential_targets') %}
+                <li class="list-group-item px-0">
+                    <strong>Potential Target Columns:</strong>
+                    <span class="badge bg-primary ms-2">{{ insights.potential_targets|join('</span> <span class="badge bg-primary">') }}</span>
+                </li>
+                {% endif %}
+                {% if insights.get('highly_correlated_pairs') %}
+                <li class="list-group-item px-0">
+                    <strong>Highly Correlated Pairs:</strong> {{ insights.highly_correlated_pairs|length }} feature pairs have |r| >= 0.7
+                </li>
+                {% endif %}
+                {% if insights.get('many_outliers_features') %}
+                <li class="list-group-item px-0">
+                    <strong>Features with >5% Outliers:</strong>
+                    {% for f in insights.many_outliers_features[:5] %}
+                    <span class="badge bg-warning text-dark me-1">{{ f.column }} ({{ f.pct }}%)</span>
+                    {% endfor %}
+                </li>
+                {% endif %}
+                {% if ts and ts.get('value_column') %}
+                <li class="list-group-item px-0">
+                    <strong>Time Series:</strong> {{ ts.date_column }} → {{ ts.value_column }} ({{ ts.total_points }} points, {{ ts.date_min }} to {{ ts.date_max }})
+                </li>
+                {% endif %}
+                {% if not insights.get('potential_targets') and not insights.get('highly_correlated_pairs') and not insights.get('many_outliers_features') %}
+                <li class="list-group-item px-0 text-muted">No specific insights to highlight. The dataset appears straightforward.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('eda.eda_dashboard', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <a href="{{ url_for('eda.eda_charts', dataset_id=dataset.id) }}" class="btn btn-outline-info">
+            <i class="fas fa-images me-1"></i>View Charts
+        </a>
+        <form method="POST" action="{{ url_for('eda.generate_report', dataset_id=dataset.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-file-pdf me-1"></i>Generate Report
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

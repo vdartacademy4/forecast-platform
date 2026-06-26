@@ -1,0 +1,45 @@
+<div class="workflow-bar">
+    <div class="workflow-steps">
+        {% for step in workflow_state.steps %}
+        {% set cls = 'completed' if step.number in workflow_state.completed else ('current' if step.number == workflow_state.current else 'locked' if step.number in workflow_state.locked else '') %}
+        {% set is_accessible = step.route and step.number <= workflow_state.current and step.number not in workflow_state.locked %}
+        {% if is_accessible %}
+        <a href="{{ url_for(step.route) if step.number == 1 else url_for(step.route, dataset_id=dataset_id) }}" class="workflow-step {{ cls }}">
+        {% else %}
+        <span class="workflow-step {{ cls }}">
+        {% endif %}
+            <span class="workflow-step-circle">
+                {% if step.number in workflow_state.completed %}<i class="fas fa-check"></i>
+                {% elif step.number in workflow_state.locked %}<i class="fas fa-lock"></i>
+                {% else %}{{ step.number }}{% endif %}
+            </span>
+            <span class="workflow-step-label">{{ step.name }}</span>
+        {% if is_accessible %}
+        </a>
+        {% else %}
+        </span>
+        {% endif %}
+        {% if not loop.last %}
+        <div class="workflow-connector {{ 'completed' if step.number in workflow_state.completed else '' }}"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% if step_urls is defined %}
+    <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+        <div>
+            {% if step_urls.prev %}
+            <a href="{{ step_urls.prev }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Previous Step
+            </a>
+            {% endif %}
+        </div>
+        <div>
+            {% if step_urls.next %}
+            <a href="{{ step_urls.next }}" class="btn btn-primary">
+                Next Step <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

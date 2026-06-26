@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Forecast Setup{% endblock %}
+{% block extra_css %}
+<style>
+.config-section { background: #fff; border-radius: 0.75rem; border: 1px solid #e9ecef; padding: 1.5rem; margin-bottom: 1.5rem; }
+.config-section h5 { font-weight: 700; margin-bottom: 1rem; color: #212529; }
+.model-card { cursor: pointer; transition: all 0.2s ease; border: 2px solid #e9ecef; border-radius: 0.75rem; padding: 1rem; text-align: center; height: 100%; }
+.model-card:hover { border-color: #0d6efd; background: rgba(13,110,253,0.03); }
+.model-card.selected { border-color: #0d6efd; background: rgba(13,110,253,0.08); }
+.model-card h6 { font-weight: 600; margin-bottom: 0.25rem; }
+.model-card small { color: #6c757d; }
+.model-card .model-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('forecasting.setup', dataset_id=dataset.id) }}">Forecasting</a></li>
+            <li class="breadcrumb-item active">Setup</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center mb-4">
+        <i class="fas fa-chart-line text-primary fa-2x me-3"></i>
+        <div>
+            <h2 class="fw-bold mb-0">Forecast Configuration</h2>
+            <p class="text-muted mb-0">{{ dataset.file_name }}</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('forecasting.train', dataset_id=dataset.id) }}" id="forecastForm">
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="config-section">
+                    <h5><i class="fas fa-calendar text-primary me-2"></i>Date Column</h5>
+                    {% if date_columns %}
+                    <select name="date_column" class="form-select">
+                        <option value="">-- Auto Detect --</option>
+                        {% for col in date_columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Select a date column or leave empty for auto-detection.</small>
+                    {% else %}
+                    <div class="alert alert-info mb-0 py-2 small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        No date column detected. Forecasting will use row order as the time axis.
+                    </div>
+                    <input type="hidden" name="date_column" value="">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="config-section">
+                    <h5><i class="fas fa-bullseye text-success me-2"></i>Target Column</h5>
+                    <select name="target_column" class="form-select" required>
+                        <option value="">-- Auto Detect --</option>
+                        {% for col in numeric_columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Select the numeric column to forecast.</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="config-section">
+                    <h5><i class="fas fa-clock text-info me-2"></i>Forecast Horizon</h5>
+                    <select name="horizon" class="form-select">
+                        <option value="7">7 Days</option>
+                        <option value="30" selected>30 Days</option>
+                        <option value="90">90 Days</option>
+                        <option value="180">180 Days</option>
+                        <option value="365">365 Days</option>
+                    </select>
+                    <small class="text-muted">Number of future periods to forecast.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="config-section">
+                    <h5><i class="fas fa-code-branch text-warning me-2"></i>Train/Test Split</h5>
+                    <select name="test_ratio" class="form-select">
+                        <option value="0.3">70% Train / 30% Test</option>
+                        <option value="0.2" selected>80% Train / 20% Test</option>
+                        <option value="0.1">90% Train / 10% Test</option>
+                    </select>
+                    <small class="text-muted">Proportion of data held out for model evaluation.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="config-section">
+                    <h5><i class="fas fa-microchip text-danger me-2"></i>Forecast Model</h5>
+                    <select name="model_name" class="form-select" id="modelSelect">
+                        <option value="">-- Auto Select Best Model --</option>
+                        <optgroup label="Traditional Models">
+                            {% for m in traditional_models %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Machine Learning">
+                            {% for m in ml_models %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Deep Learning">
+                            {% for m in dl_models %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                    <small class="text-muted">Choose a specific model or auto-select based on performance.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg px-5" id="runBtn">
+                <i class="fas fa-play me-2"></i>Run Forecast
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('runBtn').addEventListener('click', function(e) {
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Running Forecast...';
+    document.getElementById('forecastForm').submit();
+});
+</script>
+{% endblock %}

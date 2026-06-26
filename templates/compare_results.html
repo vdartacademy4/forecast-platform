@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block title %}Comparison Results{% endblock %}
+{% block extra_css %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+.section-card { border-radius: 0.75rem; transition: box-shadow 0.2s; border: 1px solid #e9ecef; }
+.section-card:hover { box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.08) !important; }
+.rank-badge { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; font-size: 0.85rem; }
+.rank-1 { background: #ffd700; color: #333; }
+.rank-2 { background: #c0c0c0; color: #333; }
+.rank-3 { background: #cd7f32; color: #fff; }
+.rank-default { background: #e9ecef; color: #6c757d; }
+.best-model-box { background: linear-gradient(135deg, #fff9c4, #fff8e1); border: 2px solid #ffd700; border-radius: 1rem; padding: 1.5rem; }
+.insight-card { padding: 1rem; border-radius: 0.5rem; height: 100%; border-left: 4px solid #dee2e6; }
+.insight-best { border-left-color: #ffd700; background: rgba(255,215,0,0.05); }
+.insight-trend { border-left-color: #0d6efd; background: rgba(13,110,253,0.05); }
+.insight-category { border-left-color: #6f42c1; background: rgba(111,66,193,0.05); }
+.insight-consistency { border-left-color: #198754; background: rgba(25,135,84,0.05); }
+.insight-variance { border-left-color: #fd7e14; background: rgba(253,126,20,0.05); }
+.insight-speed { border-left-color: #0dcaf0; background: rgba(13,202,240,0.05); }
+.insight-warning { border-left-color: #dc3545; background: rgba(220,53,69,0.03); }
+.insight-success { border-left-color: #198754; background: rgba(25,135,84,0.05); }
+.chart-container { min-height: 380px; width: 100%; }
+.model-select-btn { border: 2px solid #dee2e6; border-radius: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s; }
+.model-select-btn:hover { border-color: #0d6efd; }
+.model-select-btn.active { border-color: #0d6efd; background: rgba(13,110,253,0.05); }
+.viz-container { min-height: 300px; }
+.table-model-name { font-weight: 600; }
+.badge-traditional { background: #e3f2fd; color: #1565c0; }
+.badge-ml { background: #e8f5e9; color: #2e7d32; }
+.badge-deep { background: #fce4ec; color: #c62828; }
+</style>
+{% endblock %}
+{% block content %}
+{% set c = comparison %}
+{% set ranked = c.get('ranking', []) %}
+{% set best = c.get('best_model', '') %}
+{% set chart_data = c.get('chart_data', {}) %}
+{% set insights = c.get('insights', []) %}
+{% set table = c.get('results_table', []) %}
+<div class="container-fluid py-3 px-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.list_datasets') }}">Datasets</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dataset.detail', dataset_id=dataset.id) }}">{{ dataset.file_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('forecasting.setup', dataset_id=dataset.id) }}">Forecasting</a></li>
+            <li class="breadcrumb-item active">Model Comparison</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="fw-bold mb-0"><i class="fas fa-balance-scale text-primary me-2"></i>Model Comparison</h3>
+            <p class="text-muted mb-0">{{ dataset.file_name }} &mdash; Best Model: <strong>{{ best }}</strong></p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-1"></i>Download
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('comparison.download_comparison', dataset_id=dataset.id, file_format='csv') }}"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('comparison.download_comparison', dataset_id=dataset.id, file_format='xlsx') }}"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('comparison.download_comparison', dataset_id=dataset.id, file_format='pdf') }}"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+                </ul>
+            </div>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#compareRerunModal">
+                <i class="fas fa-redo me-1"></i>Run Again
+            </button>
+        </div>
+    </div>
+
+    <div class="best-model-box mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div style="font-size: 2.5rem;">🏆</div>
+            <div>
+                <h4 class="fw-bold mb-1">Best Model: {{ best }}</h4>
+                <p class="mb-0 text-muted">{{ c.get('best_explanation', '') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="compareTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="rankings-tab" data-bs-toggle="tab" data-bs-target="#rankings" type="button">
+                <i class="fas fa-list-ol me-1"></i>Rankings
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button">
+                <i class="fas fa-chart-bar me-1"></i>Charts
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="actual-vs-predicted-tab" data-bs-toggle="tab" data-bs-target="#actual-vs-predicted" type="button">
+                <i class="fas fa-eye me-1"></i>Actual vs Predicted
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="insights-tab" data-bs-toggle="tab" data-bs-target="#insights" type="button">
+                <i class="fas fa-lightbulb me-1"></i>Smart Insights
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table" type="button">
+                <i class="fas fa-table me-1"></i>Full Table
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="rankings" role="tabpanel">
+            <div class="row g-3">
+                {% for m in ranked %}
+                {% set r = m.get('rank', 99) %}
+                {% set b = (m.get('status') == 'success' and m['name'] == best) %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card section-card h-100 {% if b %}border-warning{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                {% if m.get('status') == 'success' and r %}
+                                <span class="rank-badge rank-{{ r if r <= 3 else 'default' }}">{{ m.get('rank_label', '#') }}</span>
+                                {% else %}
+                                <span class="rank-badge rank-default"><i class="fas fa-times"></i></span>
+                                {% endif %}
+                                <div>
+                                    <h5 class="fw-bold mb-0">
+                                        {{ m['name'] }}
+                                        {% if b %}
+                                        <span class="badge bg-warning text-dark ms-1">Best</span>
+                                        {% endif %}
+                                    </h5>
+                                    <span class="badge badge-{{ 'traditional' if m.get('model_category') == 'Traditional' else 'ml' if m.get('model_category') == 'Machine Learning' else 'deep' }}">
+                                        {{ m.get('model_category', '') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            {% if m.get('status') == 'success' %}
+                            <div class="row g-1 text-center small">
+                                <div class="col-6"><span class="text-muted">RMSE</span><br><strong>{{ m.get('rmse', 'N/A') }}</strong></div>
+                                <div class="col-6"><span class="text-muted">MAE</span><br><strong>{{ m.get('mae', 'N/A') }}</strong></div>
+                                <div class="col-6"><span class="text-muted">R²</span><br><strong>{{ m.get('r2', 'N/A') }}</strong></div>
+                                <div class="col-6"><span class="text-muted">MAPE</span><br><strong>{{ m.get('mape', 'N/A') }}</strong></div>
+                            </div>
+                            <p class="small text-muted mt-2 mb-0"><em>{{ m.get('rank_reason', '') }}</em></p>
+                            {% else %}
+                            <div class="text-center text-danger small py-2">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ m.get('error', 'Failed') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="charts" role="tabpanel">
+            <div class="row g-3">
+                {% set charts = ['rmse', 'mae', 'mape', 'r2', 'training_time'] %}
+                {% set chart_titles = {'rmse': 'RMSE Comparison', 'mae': 'MAE Comparison', 'mape': 'MAPE Comparison', 'r2': 'R² Score Comparison', 'training_time': 'Training Time Comparison'} %}
+                {% for ch in charts %}
+                <div class="col-lg-6">
+                    <div class="card section-card">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">{{ chart_titles[ch] }}</h6>
+                            <div class="chart-container" id="chart-{{ ch }}"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="actual-vs-predicted" role="tabpanel">
+            <div class="card section-card mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-eye me-1"></i>Actual vs Predicted</h6>
+                    <p class="text-muted small">Select a model to view actual vs predicted values and the forecast curve.</p>
+                    <div class="d-flex flex-wrap gap-2 mb-3" id="model-selectors">
+                        {% for m in ranked %}
+                        {% if m.get('status') == 'success' %}
+                        <button class="model-select-btn {% if loop.first %}active{% endif %}"
+                                data-model="{{ m['name'] }}"
+                                onclick="loadModelData('{{ m['name'] }}')">
+                            {{ m['name'] }}
+                            {% if m['name'] == best %}
+                            <span class="badge bg-warning text-dark ms-1">Best</span>
+                            {% endif %}
+                        </button>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div id="actual-vs-predicted-chart" class="viz-container">
+                        <p class="text-muted text-center py-5">Select a model to view its predictions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="insights" role="tabpanel">
+            <div class="card section-card">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-lightbulb me-1"></i>Smart Insights</h6>
+                    <div class="row g-3">
+                        {% for insight in insights %}
+                        <div class="col-md-6">
+                            <div class="insight-card insight-{{ insight.get('type', '') }}">
+                                <p class="mb-0 small">{{ insight.get('text', '') }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="table" role="tabpanel">
+            <div class="card section-card">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-table me-1"></i>Full Comparison Table</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Model</th>
+                                    <th>Category</th>
+                                    <th>MAE</th>
+                                    <th>RMSE</th>
+                                    <th>MAPE</th>
+                                    <th>R² Score</th>
+                                    <th>Training Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in table %}
+                                <tr class="{% if m['name'] == best %}table-warning{% endif %}">
+                                    <td>
+                                        {% if m.get('status') == 'success' and m.get('rank') %}
+                                        <span class="rank-badge rank-{{ m['rank'] if m['rank'] <= 3 else 'default' }}"
+                                              style="width:28px;height:28px;font-size:0.75rem;">
+                                            {{ m.get('rank_label', '-') }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-model-name">
+                                        {{ m['name'] }}
+                                        {% if m['name'] == best %}
+                                        <i class="fas fa-trophy text-warning ms-1" title="Best Model"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge badge-{{ 'traditional' if m.get('model_category') == 'Traditional' else 'ml' if m.get('model_category') == 'Machine Learning' else 'deep' }}">{{ m.get('model_category', '') }}</span></td>
+                                    <td>{{ m.get('mae', 'N/A') }}</td>
+                                    <td>{{ m.get('rmse', 'N/A') }}</td>
+                                    <td>{{ m.get('mape', 'N/A') }}</td>
+                                    <td>{{ m.get('r2', 'N/A') }}</td>
+                                    <td>{{ m.get('training_time', 'N/A') }}</td>
+                                    <td>
+                                        {% if m.get('status') == 'success' %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+        <div>
+            {% if prev_url %}
+            <a href="{{ prev_url }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Forecasting
+            </a>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{{ url_for('reports.view_report', dataset_id=dataset.id) }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-file-alt me-1"></i>Proceed to Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="compareRerunModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Re-run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-redo fa-3x text-warning mb-3"></i>
+                <p class="fw-bold mb-2">This will overwrite the existing results.</p>
+                <p class="text-muted small mb-0">All current comparison results will be lost. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('comparison.compare_dashboard', dataset_id=dataset.id) }}" class="btn btn-danger">
+                    <i class="fas fa-redo me-1"></i>Run Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var chartJson = {{ chart_json|safe }};
+function renderCharts() {
+    var mapping = {'rmse': 'rmse', 'mae': 'mae', 'mape': 'mape', 'r2': 'r2', 'training_time': 'training_time'};
+    for (var key in mapping) {
+        var ch = mapping[key];
+        var el = document.getElementById('chart-' + key);
+        if (el && chartJson[ch]) {
+            Plotly.newPlot(el, chartJson[ch].data, chartJson[ch].layout, {responsive: true});
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', renderCharts);
+
+var modelSelectors = document.querySelectorAll('.model-select-btn');
+function loadModelData(modelName) {
+    modelSelectors.forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.querySelector('.model-select-btn[data-model="' + modelName + '"]');
+    if (btn) btn.classList.add('active');
+
+    var container = document.getElementById('actual-vs-predicted-chart');
+    container.innerHTML = '<p class="text-muted text-center py-5"><i class="fas fa-spinner fa-spin me-1"></i>Loading...</p>';
+
+    fetch('/compare/api/model/' + {{ dataset.id }} + '/' + encodeURIComponent(modelName))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                container.innerHTML = '<p class="text-danger text-center py-5">' + data.error + '</p>';
+                return;
+            }
+            var testPred = data.test_predictions || [];
+            var futurePred = data.future_predictions || [];
+            var futureDates = data.future_dates || [];
+            var nTest = testPred.length;
+
+            var actualTrace = {
+                x: testPred.map(function(_, i) { return 'Test ' + (i + 1); }),
+                y: testPred,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Actual (Test Predictions)',
+                line: {color: '#0d6efd'}
+            };
+            var futureTrace = {
+                x: futureDates,
+                y: futurePred,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Forecast',
+                line: {color: '#198754', dash: 'dash'}
+            };
+            var traces = [actualTrace];
+            if (futurePred.length > 0) traces.push(futureTrace);
+
+            var layout = {
+                title: modelName + ' — Actual vs Predicted',
+                height: 350,
+                margin: {t: 40, b: 60, l: 60, r: 20},
+                template: 'plotly_white',
+                xaxis: {title: 'Time'},
+                yaxis: {title: data.target_col || 'Value'},
+                showlegend: true,
+                legend: {orientation: 'h', y: -0.2}
+            };
+            Plotly.newPlot(container, traces, layout, {responsive: true});
+        })
+        .catch(function(err) {
+            container.innerHTML = '<p class="text-danger text-center py-5">Failed to load model data.</p>';
+            console.error(err);
+        });
+}
+
+var firstSuccess = document.querySelector('.model-select-btn.active');
+if (firstSuccess) {
+    loadModelData(firstSuccess.getAttribute('data-model'));
+}
+</script>
+{% endblock %}

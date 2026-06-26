@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Manual Preprocessing{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-sliders-h text-success me-2"></i>Manual Preprocessing</h2>
+        <p class="text-muted">Configure preprocessing steps for <strong>{{ dataset.file_name }}</strong></p>
+    </div>
+    <form method="POST" action="{{ url_for('preprocessing.manual_preprocessing', dataset_id=dataset.id) }}" id="prepForm">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Missing Values</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if missing_info %}
+                        <div class="mb-3">
+                            <small class="text-muted">Columns with missing values:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for col, count in missing_info.items() %}
+                                <span class="badge bg-warning text-dark">{{ col }}: {{ count }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success py-2 small">No missing values detected.</div>
+                        {% endif %}
+                        <label class="form-label fw-semibold">Method</label>
+                        <select name="missing_method" class="form-select">
+                            <option value="none">None</option>
+                            <option value="mean">Mean Imputation</option>
+                            <option value="median" selected>Median Imputation</option>
+                            <option value="mode">Mode Imputation</option>
+                            <option value="ffill">Forward Fill</option>
+                            <option value="bfill">Backward Fill</option>
+                            <option value="drop">Drop Missing Rows</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-warning"><i class="fas fa-exclamation-circle me-2"></i>Outlier Handling</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Method</label>
+                            <select name="outlier_method" class="form-select">
+                                <option value="none">None</option>
+                                <option value="iqr" selected>IQR Method</option>
+                                <option value="zscore">Z-Score Method</option>
+                            </select>
+                        </div>
+                        <label class="form-label fw-semibold">Apply to Columns</label>
+                        <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                            {% if numeric_columns %}
+                            {% for col in numeric_columns %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="outlier_columns" value="{{ col }}" id="out_{{ col }}" checked>
+                                <label class="form-check-label" for="out_{{ col }}">{{ col }}</label>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted small mb-0">No numeric columns available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-tag me-2"></i>Encoding</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Method</label>
+                            <select name="encoding_method" class="form-select">
+                                <option value="none">None</option>
+                                <option value="label" selected>Label Encoding</option>
+                                <option value="onehot">One-Hot Encoding</option>
+                            </select>
+                        </div>
+                        <label class="form-label fw-semibold">Apply to Columns</label>
+                        <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                            {% if categorical_columns %}
+                            {% for col in categorical_columns %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="encoding_columns" value="{{ col }}" id="enc_{{ col }}" checked>
+                                <label class="form-check-label" for="enc_{{ col }}">{{ col }}</label>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted small mb-0">No categorical columns available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-info"><i class="fas fa-arrows-alt me-2"></i>Feature Scaling</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Method</label>
+                            <select name="scaling_method" class="form-select">
+                                <option value="none">None</option>
+                                <option value="standard" selected>StandardScaler</option>
+                                <option value="minmax">MinMaxScaler</option>
+                                <option value="robust">RobustScaler</option>
+                            </select>
+                        </div>
+                        <label class="form-label fw-semibold">Apply to Columns</label>
+                        <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                            {% if numeric_columns %}
+                            {% for col in numeric_columns %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="scaling_columns" value="{{ col }}" id="scl_{{ col }}" checked>
+                                <label class="form-check-label" for="scl_{{ col }}">{{ col }}</label>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted small mb-0">No numeric columns available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if date_columns %}
+            <div class="col-12">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-calendar me-2"></i>Date Feature Engineering</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Date Column</label>
+                            <select name="date_column" class="form-select">
+                                <option value="">None</option>
+                                {% for col in date_columns %}
+                                <option value="{{ col }}" selected>{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <label class="form-label fw-semibold">Features to Generate</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            {% for feat in ['year', 'month', 'day', 'week', 'quarter', 'dayofweek'] %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="date_features" value="{{ feat }}" id="df_{{ feat }}" checked>
+                                <label class="form-check-label" for="df_{{ feat }}">{{ feat|capitalize }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success btn-lg px-5">
+                <i class="fas fa-cogs me-2"></i>Run Preprocessing
+            </button>
+            <a href="{{ url_for('preprocessing.mode_selection', dataset_id=dataset.id) }}" class="btn btn-outline-secondary btn-lg ms-2">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

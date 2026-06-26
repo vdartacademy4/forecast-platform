@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Upload Dataset{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-upload text-primary me-2"></i>Upload Dataset
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Supported formats: <strong>CSV</strong>, <strong>XLS</strong>, <strong>XLSX</strong>
+                        &mdash; Max size: <strong>50 MB</strong>
+                    </div>
+                    <form method="POST" action="{{ url_for('dataset.upload') }}"
+                          enctype="multipart/form-data" id="uploadForm">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Choose File</label>
+                            <div class="upload-zone text-center p-5 border border-2 border-dashed rounded"
+                                 id="dropZone"
+                                 style="cursor:pointer; background:#f8f9fc; transition: all 0.2s;">
+                                <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3" id="uploadIcon"></i>
+                                <h5 class="mb-1" id="dropText">Drag & drop your file here</h5>
+                                <p class="text-muted mb-3 small">or click to browse</p>
+                                <input type="file" name="file" id="fileInput"
+                                       class="d-none" accept=".csv,.xls,.xlsx" required>
+                                <div id="fileInfo" class="d-none">
+                                    <div class="d-inline-block bg-light px-4 py-2 rounded">
+                                        <i class="fas fa-file me-2"></i>
+                                        <span id="fileName" class="fw-medium"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn" disabled>
+                                <i class="fas fa-upload me-2"></i>Upload Dataset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('dataset.list_datasets') }}" class="text-decoration-none small">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Upload History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const dropText = document.getElementById('dropText');
+    const uploadIcon = document.getElementById('uploadIcon');
+
+    dropZone.addEventListener('click', function () {
+        fileInput.click();
+    });
+
+    dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.style.background = '#e8f0fe';
+        this.style.borderColor = '#0d6efd';
+    });
+
+    dropZone.addEventListener('dragleave', function () {
+        this.style.background = '#f8f9fc';
+        this.style.borderColor = '';
+    });
+
+    dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.style.background = '#f8f9fc';
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length) {
+            handleFile(this.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'xls', 'xlsx'].includes(ext)) {
+            alert('Invalid file type. Please select a CSV, XLS, or XLSX file.');
+            fileInput.value = '';
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            alert('File is too large. Maximum size is 50 MB.');
+            fileInput.value = '';
+            return;
+        }
+        fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        fileInfo.classList.remove('d-none');
+        dropText.textContent = 'File selected';
+        uploadIcon.className = 'fas fa-check-circle fa-4x text-success mb-3';
+        uploadBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

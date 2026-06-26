@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Forecast Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+.section-card { border-radius: 0.75rem; transition: box-shadow 0.2s; border: 1px solid #e9ecef; }
+.section-card:hover { box-shadow: 0 0.25rem 1rem rgba(0,0,0,0.08) !important; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-chart-line text-primary me-2"></i>Forecast Dashboard
+            </h2>
+            <p class="text-muted mb-0">
+                {{ dataset.file_name }} &mdash; Model: <strong>{{ report.model_name }}</strong>
+                <span class="badge bg-primary ms-2">{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else '' }}</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('forecasting.results', dataset_id=dataset.id) }}" class="btn btn-primary">
+                <i class="fas fa-chart-line me-1"></i>View Full Results
+            </a>
+            <a href="{{ url_for('forecasting.download_forecast', dataset_id=dataset.id) }}" class="btn btn-success">
+                <i class="fas fa-download me-1"></i>Download CSV
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary mb-0">{{ report.model_name }}</h3>
+                    <small class="text-muted">Forecast Model</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-success mb-0">{{ report.forecast_horizon }}</h3>
+                    <small class="text-muted">Forecast Horizon</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-info mb-0">{{ report.mae or 'N/A' }}</h3>
+                    <small class="text-muted">MAE</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-warning mb-0">{{ report.r2_score or 'N/A' }}</h3>
+                    <small class="text-muted">R² Score</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card section-card h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-info-circle me-1"></i>Configuration</h6>
+                    <table class="table table-sm mb-0">
+                        <tr><td><strong>Target Column</strong></td><td>{{ report.target_column or 'Auto' }}</td></tr>
+                        <tr><td><strong>Date Column</strong></td><td>{{ report.date_column or 'Auto' }}</td></tr>
+                        <tr><td><strong>Forecast Horizon</strong></td><td>{{ report.forecast_horizon }} periods</td></tr>
+                        <tr><td><strong>Created</strong></td><td>{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else 'N/A' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card section-card h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3"><i class="fas fa-chart-bar me-1"></i>Performance Metrics</h6>
+                    <table class="table table-sm mb-0">
+                        <tr><td><strong>MAE</strong></td><td>{{ report.mae or 'N/A' }}</td></tr>
+                        <tr><td><strong>RMSE</strong></td><td>{{ report.rmse or 'N/A' }}</td></tr>
+                        <tr><td><strong>MAPE (%)</strong></td><td>{{ report.mape or 'N/A' }}</td></tr>
+                        <tr><td><strong>R² Score</strong></td><td>{{ report.r2_score or 'N/A' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card section-card h-100">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100 text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size:3rem;"></i>
+                    <h5 class="fw-bold mt-2">Forecast Complete</h5>
+                    <p class="text-muted small mb-0">Forecast results are available for review and download.</p>
+                    <a href="{{ url_for('forecasting.results', dataset_id=dataset.id) }}" class="btn btn-outline-primary btn-sm mt-3">
+                        <i class="fas fa-chart-line me-1"></i>View Detailed Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('forecasting.results', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <i class="fas fa-chart-line me-1"></i>View Full Results
+        </a>
+        <a href="{{ url_for('forecasting.download_forecast', dataset_id=dataset.id) }}" class="btn btn-success">
+            <i class="fas fa-download me-1"></i>Download Forecast CSV
+        </a>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#forecastRerunModal">
+            <i class="fas fa-redo me-1"></i>Run Again
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="forecastRerunModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Re-run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-redo fa-3x text-warning mb-3"></i>
+                <p class="fw-bold mb-2">This will overwrite the existing results.</p>
+                <p class="text-muted small mb-0">All current forecasting results will be lost. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('forecasting.setup', dataset_id=dataset.id) }}" class="btn btn-danger">
+                    <i class="fas fa-redo me-1"></i>Run Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

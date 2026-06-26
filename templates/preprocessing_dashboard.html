@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Preprocessing Results{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-filter text-primary me-2"></i>Preprocessing Results
+            </h2>
+            <p class="text-muted mb-0">
+                {{ dataset.file_name }} &mdash; {{ report.mode|title }} Mode
+                <span class="badge bg-primary ms-2">{{ report.created_at.strftime('%Y-%m-%d %H:%M') if report.created_at else '' }}</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('preprocessing.summary', dataset_id=dataset.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-file-alt me-1"></i>Summary
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary mb-0">{{ report.original_shape }}</h3>
+                    <small class="text-muted">Original Shape</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-success mb-0">{{ report.processed_shape }}</h3>
+                    <small class="text-muted">Processed Shape</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-info mb-0">{{ steps.keys()|length }}</h3>
+                    <small class="text-muted">Steps Applied</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-warning mb-0">{{ report.mode|title }}</h3>
+                    <small class="text-muted">Processing Mode</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if steps.get('missing_values') %}
+    {% set mv = steps['missing_values'] %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Missing Value Handling</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-danger mb-0">{{ mv.get('missing_before', 0) }}</h4>
+                        <small class="text-muted">Missing Before</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-success mb-0">{{ mv.get('missing_after', 0) }}</h4>
+                        <small class="text-muted">Missing After</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-info mb-0">{{ mv.get('method', '-')|title }}</h4>
+                        <small class="text-muted">Method Used</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set out = steps.get('outliers', {}) %}
+    {% if out %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-warning"><i class="fas fa-exclamation-circle me-2"></i>Outlier Handling</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-warning mb-0">{{ out.get('total_detected', 0) }}</h4>
+                        <small class="text-muted">Outliers Detected</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-success mb-0">{{ out.get('total_removed', 0) }}</h4>
+                        <small class="text-muted">Outliers Removed</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-info mb-0">{{ out.get('method', '-')|upper }}</h4>
+                        <small class="text-muted">Method</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-primary mb-0">{{ out.get('columns', [])|length }}</h4>
+                        <small class="text-muted">Columns Processed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set enc = steps.get('encoding', {}) %}
+    {% if enc %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-tag me-2"></i>Encoding</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-primary mb-0">{{ enc.get('method', '-')|title }}</h4>
+                        <small class="text-muted">Method</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-success mb-0">{{ enc.get('columns', [])|length }}</h4>
+                        <small class="text-muted">Columns Encoded</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-info mb-0">{{ enc.get('created_columns', [])|length if enc.get('created_columns') else '-' }}</h4>
+                        <small class="text-muted">New Columns Created</small>
+                    </div>
+                </div>
+            </div>
+            {% if enc.get('columns') %}
+            <div class="mt-3">
+                <small class="text-muted">Encoded columns:</small>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% for col in enc['columns'] %}
+                    <span class="badge bg-primary">{{ col }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% set scl = steps.get('scaling', {}) %}
+    {% if scl %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-info"><i class="fas fa-arrows-alt me-2"></i>Feature Scaling</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-info mb-0">{{ scl.get('method', '-')|title }}</h4>
+                        <small class="text-muted">Method</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-success mb-0">{{ scl.get('columns', [])|length }}</h4>
+                        <small class="text-muted">Columns Scaled</small>
+                    </div>
+                </div>
+            </div>
+            {% if scl.get('columns') %}
+            <div class="mt-3">
+                <small class="text-muted">Scaled columns:</small>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% for col in scl['columns'] %}
+                    <span class="badge bg-info text-dark">{{ col }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% set dt = steps.get('date_features', {}) %}
+    {% if dt and dt.get('features_created') %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-calendar me-2"></i>Date Features Created</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-secondary mb-0">{{ dt.get('date_column', '-') }}</h4>
+                        <small class="text-muted">Source Column</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h4 class="fw-bold text-success mb-0">{{ dt.get('features_created', [])|length }}</h4>
+                        <small class="text-muted">Features Created</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded text-center">
+                        <div class="d-flex flex-wrap gap-1 justify-content-center">
+                            {% for f in dt.get('features_created', []) %}
+                            <span class="badge bg-secondary">{{ f }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not steps %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-info-circle fa-3x text-muted mb-3" style="opacity:0.3;"></i>
+            <h5 class="text-muted">No preprocessing steps were applied</h5>
+            <p class="text-muted small">The dataset may have been already clean, or no steps were selected in manual mode.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('preprocessing.summary', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <i class="fas fa-file-alt me-1"></i>View Summary &amp; Download
+        </a>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rerunModal">
+            <i class="fas fa-redo me-1"></i>Run Again
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="rerunModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Re-run</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-redo fa-3x text-warning mb-3"></i>
+                <p class="fw-bold mb-2">This will overwrite the existing results.</p>
+                <p class="text-muted small mb-0">All current preprocessing results will be lost. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('preprocessing.mode_selection', dataset_id=dataset.id) }}" class="btn btn-danger">
+                    <i class="fas fa-redo me-1"></i>Run Again
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
