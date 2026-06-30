@@ -165,48 +165,107 @@ def analyze_categorical(df):
 
 
 def analyze_timeseries(df, date_col=None):
+    """
+    Analyze time series information from the dataset.
+
+    - Automatically detects datetime column if not provided.
+    - Handles mixed timezone formats safely.
+    - Works with weather, stock, sales and generic datasets.
+    """
+
+    # Auto detect datetime column
     if date_col is None:
         for col in df.columns:
             if pd.api.types.is_datetime64_any_dtype(df[col]):
                 date_col = col
                 break
+
         if date_col is None:
             for col in df.columns:
                 try:
-                    pd.to_datetime(df[col].dropna().head(100))
-                    date_col = col
-                    break
-                except Exception as e:
-                    _log_error('analyze_timeseries', col, e)
+                    sample = df[col].dropna().head(100)
+
+                    parsed = pd.to_datetime(
+                        sample,
+                        errors="coerce",
+                        utc=True
+                    )
+
+                    # Accept column only if most values are valid dates
+                    if parsed.notna().mean() >= 0.8:
+                        date_col = col
+                        break
+
+                except Exception:
+                    continue
+
     if date_col is None:
         return None
+
+    # Convert datetime safely
     try:
-        ts = pd.to_datetime(df[date_col], errors="coerce")
+        ts = pd.to_datetime(
+            df[date_col],
+            errors="coerce",
+            utc=True
+        )
+
+        # Remove timezone information
+        ts = ts.dt.tz_localize(None)
+
     except Exception as e:
-        _log_error('analyze_timeseries', date_col, e)
+        _log_error("analyze_timeseries", date_col, e)
         return None
+
+    # Find first numeric column
     numeric = df.select_dtypes(include=[np.number]).columns.tolist()
-    value_col = numeric[0] if numeric else None
-    if value_col is None:
-        return {'date_column': date_col, 'value_column': None, 'msg': 'No numeric column for trend analysis'}
+
+    if not numeric:
+        return {
+            "date_column": date_col,
+            "value_column": None,
+            "msg": "No numeric column available for trend analysis"
+        }
+
+    value_col = numeric[0]
+
+    # Build cleaned dataframe
     ts_df = pd.DataFrame({
-        "date": pd.to_datetime(df[date_col], errors="coerce"),
+        "date": ts,
         "value": df[value_col]
-    }).dropna()
+    })
+
+    ts_df = ts_df.dropna()
+
+    if ts_df.empty:
+        return {
+            "date_column": date_col,
+            "value_column": value_col,
+            "msg": "No valid datetime values found"
+        }
 
     ts_df = ts_df.sort_values("date")
 
     if len(ts_df) < 4:
-        return {'date_column': date_col, 'value_column': value_col, 'msg': 'Not enough data points'}
-    return {
-        'date_column': date_col,
-        'value_column': value_col,
-        'date_min': str(ts_df['date'].min()),
-        'date_max': str(ts_df['date'].max()),
-        'total_points': len(ts_df),
-        'frequency': pd.infer_freq(ts_df['date']) or 'Irregular'
-    }
+        return {
+            "date_column": date_col,
+            "value_column": value_col,
+            "msg": "Not enough data points for time series analysis"
+        }
 
+    try:
+        frequency = pd.infer_freq(ts_df["date"])
+    except Exception:
+        frequency = None
+
+    return {
+        "date_column": date_col,
+        "value_column": value_col,
+        "date_min": str(ts_df["date"].min()),
+        "date_max": str(ts_df["date"].max()),
+        "total_points": len(ts_df),
+        "frequency": frequency if frequency else "Irregular"
+    }
 
 def get_feature_insights(df, stats, correlation, outliers_iqr):
     numeric = df.select_dtypes(include=[np.number]).columns.tolist()
@@ -265,58 +324,89 @@ def _prepare_dataframe(df):
     """
     Prepare dataframe safely for EDA.
 
-    - Automatically detect datetime columns.
-    - Convert datetime strings to datetime dtype.
-    - Preserve categorical/text columns.
-    - Never force string columns into float.
+    - Detect datetime columns.
+    - Handle mixed formats.
+    - Handle timezone-aware timestamps.
+    - Preserve categorical columns.
     """
 
     df = df.copy()
 
     for col in df.columns:
 
-        # Already datetime
         if pd.api.types.is_datetime64_any_dtype(df[col]):
             continue
 
-        # Only inspect object columns
-        if df[col].dtype == object:
+        if df[col].dtype != object:
+            continue
 
-            sample = df[col].dropna().head(100)
+        sample = df[col].dropna().head(100)
 
-            if len(sample) == 0:
-                continue
+        if len(sample) == 0:
+            continue
 
-            try:
-                parsed = pd.to_datetime(sample, errors="coerce")
+        try:
 
-                # Consider it datetime only if most values are valid dates
-                if parsed.notna().sum() >= len(sample) * 0.8:
-                    df[col] = pd.to_datetime(df[col], errors="coerce")
+            parsed = pd.to_datetime(
+                sample,
+                format="mixed",
+                errors="coerce",
+                utc=True
+            )
 
-            except Exception:
-                pass
+            if parsed.notna().mean() >= 0.8:
+
+                df[col] = pd.to_datetime(
+                    df[col],
+                    format="mixed",
+                    errors="coerce",
+                    utc=True
+                )
+
+                df[col] = df[col].dt.tz_localize(None)
+
+        except Exception:
+            pass
 
     return df
 
 def _detect_datetime_columns(df):
-    """Detect datetime columns including object-typed date strings."""
+    """
+    Detect datetime columns including object/string date columns.
+    Supports mixed date formats and timezone-aware timestamps.
+    """
+
     date_cols = []
+
     for col in df.columns:
+
+        # Already datetime dtype
         if pd.api.types.is_datetime64_any_dtype(df[col]):
             date_cols.append(col)
-        elif df[col].dtype == object:
-            sample = df[col].dropna().head(100)
-            if len(sample) == 0:
-                continue
-            try:
-                converted = pd.to_datetime(sample, errors='coerce')
-                if converted.notna().sum() >= len(sample) * 0.8:
-                    date_cols.append(col)
-            except Exception:
-                continue
-    return date_cols
+            continue
 
+        # Take a sample of non-null values
+        sample = df[col].dropna().head(100)
+
+        if len(sample) == 0:
+            continue
+
+        try:
+            converted = pd.to_datetime(
+                sample,
+                format="mixed",
+                errors="coerce",
+                utc=True
+            )
+
+            # Accept column if at least 80% are valid dates
+            if converted.notna().mean() >= 0.8:
+                date_cols.append(col)
+
+        except Exception:
+            continue
+
+    return date_cols
 
 def generate_charts(df, output_dir, selected_charts=None):
     charts = {}

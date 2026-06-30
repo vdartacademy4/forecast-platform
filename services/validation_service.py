@@ -98,9 +98,24 @@ def detect_date_columns(df):
         sample = df[col].dropna().astype(str).head(100)
         if len(sample) == 0:
             continue
+        
         try:
-            pd.to_datetime(sample)
-            date_cols.append(str(col))
+            parsed = pd.to_datetime(
+                sample,
+                format="mixed",
+                errors="coerce",
+                utc=True
+            )
+        except TypeError:
+            parsed = pd.to_datetime(
+                sample,
+                errors="coerce",
+                utc=True
+            )
+
+            if parsed.notna().mean() >= 0.8:
+                date_cols.append(str(col))
+                date_cols.append(str(col))
         except (ValueError, TypeError):
             pass
     return date_cols

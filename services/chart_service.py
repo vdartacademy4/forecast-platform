@@ -346,20 +346,48 @@ def pie_chart(freq_dict, title, output_dir, filename='pie_chart'):
     return _plotly_to_json(fig), img_path
 
 
-def _prepare_datetime(series, column):
-    """Detect and convert a series to datetime. Returns pd.DatetimeIndex or None."""
-    if series is None or len(series) == 0:
-        return None
-    if pd.api.types.is_datetime64_any_dtype(series):
-        return series.dropna()
+def _prepare_datetime(series, column_name=""):
+    """
+    Safely convert a column to datetime.
+
+    Supports:
+    - Mixed datetime formats
+    - Timezone-aware timestamps
+    - Timezone-naive timestamps
+    - Weather datasets
+    """
+
     try:
-        converted = pd.to_datetime(series, errors='coerce').dropna()
-        if len(converted) == 0:
-            _log_error('prepare_datetime', column, 'No valid datetime values after conversion')
+
+        converted = pd.to_datetime(
+            series,
+            format="mixed",
+            errors="coerce",
+            utc=True
+        )
+
+        converted = converted.dt.tz_localize(None)
+
+        converted = converted.dropna()
+
+        if converted.empty:
+            _log_error(
+                "prepare_datetime",
+                column_name,
+                "No valid datetime values"
+            )
             return None
+
         return converted
+
     except Exception as e:
-        _log_error('prepare_datetime', column, f'Conversion failed: {e}')
+
+        _log_error(
+            "prepare_datetime",
+            column_name,
+            f"Conversion failed: {e}"
+        )
+
         return None
 
 

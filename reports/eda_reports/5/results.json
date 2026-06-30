@@ -1,12 +1,12 @@
 {
-  "report_id": 15,
+  "report_id": 33,
   "dataset_overview": {
     "rows": 8784,
     "columns": 12,
     "memory_kb": 1522.69,
     "numeric_count": 8,
     "categorical_count": 4,
-    "date_count": 0,
+    "date_count": 9,
     "column_types": {
       "numeric": [
         "Temperature (C)",
@@ -9522,7 +9522,14 @@
       "top_freq": 912
     }
   },
-  "timeseries": null,
+  "timeseries": {
+    "date_column": "Formated Date",
+    "value_column": "Temperature (C)",
+    "date_min": "2005-12-31 23:00:00",
+    "date_max": "2010-08-02 21:00:00",
+    "total_points": 8778,
+    "frequency": "Irregular"
+  },
   "feature_insights": {
     "potential_targets": [
       "Temperature (C)",
@@ -10385,7 +10392,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Temperature (C).png"
       },
       {
         "column": "Apparent Temperature (C)",
@@ -11202,7 +11209,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Apparent Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Apparent Temperature (C).png"
       },
       {
         "column": "Humidity",
@@ -12019,7 +12026,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Humidity.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Humidity.png"
       },
       {
         "column": "Wind Speed (km/h)",
@@ -12836,7 +12843,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Wind Speed (km/h).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Wind Speed (km/h).png"
       },
       {
         "column": "Wind Bearing (degrees)",
@@ -13653,7 +13660,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Wind Bearing (degrees).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Wind Bearing (degrees).png"
       },
       {
         "column": "Visibility (km)",
@@ -14470,7 +14477,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Visibility (km).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\histogram_Visibility (km).png"
       }
     ],
     "boxplots": [
@@ -15279,7 +15286,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Temperature (C).png"
       },
       {
         "column": "Apparent Temperature (C)",
@@ -16086,7 +16093,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Apparent Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Apparent Temperature (C).png"
       },
       {
         "column": "Humidity",
@@ -16893,7 +16900,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Humidity.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Humidity.png"
       },
       {
         "column": "Wind Speed (km/h)",
@@ -17700,7 +17707,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Wind Speed (km/h).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Wind Speed (km/h).png"
       },
       {
         "column": "Wind Bearing (degrees)",
@@ -18507,7 +18514,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Wind Bearing (degrees).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Wind Bearing (degrees).png"
       },
       {
         "column": "Visibility (km)",
@@ -19314,7 +19321,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Visibility (km).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\boxplot_Visibility (km).png"
       }
     ],
     "density": [
@@ -19336,7 +19343,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "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"
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -20140,7 +20147,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Temperature (C).png"
       },
       {
         "column": "Apparent Temperature (C)",
@@ -20160,7 +20167,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "TFNg2FLiMz9IZvfaKXU1P/vsyfKk0DY/TZ0QOGz5Nz9wXEcRXf04P+H77gQJ8zk/ANLHo0D4Oj/hdaqV0i88P5Lhjwi3vj0/aXYePebIPz+SqeTMDDdBPx1Igilb40I/2a+cNpHwRD+/t0op5F9HP7P67T4HLEo/1GAL5UBJTT9emNsUF1NQPx2rTpubFlI/Wk/Zj0/jUz/bkIpyf61VP3V2F6Xyalc/6q2LoyQUWT9qWfvcP6VaP1irmsu7Hlw/kSXSjY+FXT+wHnXx/OJeP5CXR64EImA/u48pD2PcYD8R5xPDxqlhP6pS8VwqlGI/hpgOhRKmYz8Ml4nuXupkP/Y2dWonbGY/s9OipJY2aD+sB4APslRqPxTSHIYB0Ww/iOIvwBC1bz9DSNqfZ4RxP8VAvD/vaHM/8oktonOJdT+L/KDpieV3Py4f0Q/meno//nuoS2VFfT81XNs6pR+AP25eyXnVsIE/tzy6lYFSgz+umoll8QCFPwn6iinOuIY/Dj22jnB3iD85FkTtGTuKPxdJPqAPA4w/noL+epLPjT/FBA11sKGPP68N0Zd5vZA/Q3rbPXmukT/VTXcDa6SSP4EfcS1qn5M/Da0Rfd+elD99erWiVaGVP/lCmNpipJY/eB3MaKyklz9/ICu7BZ6YP53lcYKpi5k/dod1mIdomj8Cegminy+bP8P6BZZe3Js/8gwFDPVqnD9tBcp4ndicP+ZI8f/LI50/WMaWskRMnT8vZMFHGFOdPzqEFQWKOp0/hyT+W+MFnT99X7GsOrmcP78C/OEyWZw/9NfFc7nqmz/KwF79x3KbPxbwhfAt9po/8g8H12V5mj9mnKXadwCaP1q0RvHojpk/zOEibbMnmT98wK9+Q82YP9lKGURxgZg/sXm79nJFmD9IRA7IxBmYP/ARCYUI/pc/yfYC/OPwlz/t++7y6O+XP5qCIfCS95c/FH10fGUDmD9lAEAAMQ6YP1izaOB9Epg/CRZifxYLmD/iBTe7ovOXPwcAi4dDyZc/ThOU1RuLlz/wuCMAtTqXPwduy+sv3JY/NLJEbTh2lj/9AGHqtRGWPwbFnVM6uZU/PItfWTd4lT/yGi3ECFqVP0f6N2TpaJU/Bi5aEe2slT82GmZ/HCuWP/q8qEbO5JY/z9B4FlPXlz/0ZR8VAvyYPxqgKj2nSJo/HSvV2kmwmz+3tKL4NiSdPyuIfQU0lZ4/a/0uG7r0nz+ZY60YDZugP+W28uy2J6E/7yfDGx+doT8kCXN46fmhP7FgHxGSPqI/g0ti7zltoj8NKQ5gTomiPxSfVSoVl6I/Sy49jyqboj8O2eff/pmiPwnPU+1gl6I/dWQRuSCWoj+pbuD60peiP4YqrZ26nKI/CnDVjdmjoj9dho5CJquiP9SsOoHfr6I/UMJEO/Suoj++KvyLcqWiPyPHfl7vkKI/ODQXt9hvoj9cVHlMp0GiP/GUBN3oBqI/KmNFvyLBoT8Jod1tknKhP+QqTvvWHaE/oN9MbpHFoD/eFIyGCmygP1kJ93bqEqA/AKE1yBZ2nz+xq6eq1cieP2GhZFJzHJ4/K753VgxunT+VKKMD8rmcP4MlteI3/Js/k3gM0UExmz+tSUrQQFaaP/pQ1ByQaZk/7KZNYOlqmD8EtwFPbVuXP2TJbqmEPZY/v4fjOaMUlT+tGbTU+eSTP4B3Z+0ks5I/bgXo/eKDkT9alsGG2VuQP8P5d0rUfo4/QKRmKylljD/CIrBZv3GKPyJ26QKGqog/scG5GRoUhz/MwTJTirGFP5U27LMZhIQ/pJ0SuQ2Lgz/Ma12bl8OCPxh6kvDlKII/IfzCeWW0gT9dGNPXLl6BPzlEFouVHYE/qmTQhMXpgD9Bo/WMWbqAP/NXcp3Wh4A/GV/Skf5LgD9kqsR79QGAPw1L2Xt8TH8//TYa0TRtfj9vQtoFumN9P4k15Jt+L3w/lD3iVITRej+34NFLQEx5PxgZwHaao3c/l99y7vfcdT+wylNnOv9zP8yx0AKhEnI/C0CLHn4gcD8wPyxpgWVsP9h8jXu2pmg/d+sf8jUXZT8N8XP2DcdhP+YV8cp2hV0/BMNxjgglWD8iWRdehnRTP3Dra5OH5k4/45d6E8MySD8CbZt58rJCPw=="
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -20964,7 +20971,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Apparent Temperature (C).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Apparent Temperature (C).png"
       },
       {
         "column": "Humidity",
@@ -20984,7 +20991,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "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"
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -21788,7 +21795,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Humidity.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Humidity.png"
       },
       {
         "column": "Wind Speed (km/h)",
@@ -21808,7 +21815,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "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"
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -22612,7 +22619,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Wind Speed (km/h).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Wind Speed (km/h).png"
       },
       {
         "column": "Wind Bearing (degrees)",
@@ -22632,7 +22639,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "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"
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -23436,7 +23443,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Wind Bearing (degrees).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Wind Bearing (degrees).png"
       },
       {
         "column": "Visibility (km)",
@@ -23456,7 +23463,7 @@
               },
               "y": {
                 "dtype": "f8",
-                "bdata": "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"
+                "bdata": "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"
               },
               "type": "scatter"
             }
@@ -24260,7 +24267,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Visibility (km).png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\density_Visibility (km).png"
       }
     ],
     "correlation": {
@@ -25142,7 +25149,7 @@
           "width": 600
         }
       },
-      "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\correlation_heatmap.png"
+      "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\correlation_heatmap.png"
     },
     "missing": {
       "plotly": {
@@ -25152,15 +25159,15 @@
               "color": "#dc3545"
             },
             "text": [
-              "1",
-              "6",
-              "8",
-              "3",
-              "7",
-              "1",
-              "8",
-              "3",
-              "1"
+              "1.0",
+              "6.0",
+              "8.0",
+              "3.0",
+              "7.0",
+              "1.0",
+              "8.0",
+              "3.0",
+              "1.0"
             ],
             "textposition": "outside",
             "x": [
@@ -25175,15 +25182,15 @@
               "Daily Summary"
             ],
             "y": [
-              1,
-              6,
-              8,
-              3,
-              7,
-              1,
-              8,
-              3,
-              1
+              1.0,
+              6.0,
+              8.0,
+              3.0,
+              7.0,
+              1.0,
+              8.0,
+              3.0,
+              1.0
             ],
             "type": "bar"
           }
@@ -25987,7 +25994,7 @@
           "height": 400
         }
       },
-      "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\missing_values.png"
+      "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\missing_values.png"
     },
     "missing_heatmap": {
       "plotly": {
@@ -28821,7 +28828,7 @@
           "width": 700
         }
       },
-      "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\missing_heatmap.png"
+      "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\missing_heatmap.png"
     },
     "bar": [
       {
@@ -28833,16 +28840,16 @@
                 "color": "#198754"
               },
               "text": [
-                "1",
-                "1",
-                "1",
-                "1",
-                "1",
-                "1",
-                "1",
-                "1",
-                "1",
-                "1"
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0",
+                "1.0"
               ],
               "textposition": "outside",
               "x": [
@@ -28858,16 +28865,16 @@
                 "2006-04-01 09:00:00.000 +0200"
               ],
               "y": [
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0
               ],
               "type": "bar"
             }
@@ -29661,7 +29668,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Formated Date.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Formated Date.png"
       },
       {
         "column": "Summary",
@@ -29672,16 +29679,16 @@
                 "color": "#198754"
               },
               "text": [
-                "2782",
-                "2238",
-                "1526",
-                "1400",
-                "709",
-                "40",
-                "32",
-                "31",
-                "7",
-                "6"
+                "2782.0",
+                "2238.0",
+                "1526.0",
+                "1400.0",
+                "709.0",
+                "40.0",
+                "32.0",
+                "31.0",
+                "7.0",
+                "6.0"
               ],
               "textposition": "outside",
               "x": [
@@ -29697,16 +29704,16 @@
                 "Humid and Mostly Cloudy"
               ],
               "y": [
-                2782,
-                2238,
-                1526,
-                1400,
-                709,
-                40,
-                32,
-                31,
-                7,
-                6
+                2782.0,
+                2238.0,
+                1526.0,
+                1400.0,
+                709.0,
+                40.0,
+                32.0,
+                31.0,
+                7.0,
+                6.0
               ],
               "type": "bar"
             }
@@ -30500,7 +30507,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Summary.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Summary.png"
       },
       {
         "column": "Precip Type",
@@ -30511,8 +30518,8 @@
                 "color": "#198754"
               },
               "text": [
-                "7492",
-                "1291"
+                "7492.0",
+                "1291.0"
               ],
               "textposition": "outside",
               "x": [
@@ -30520,8 +30527,8 @@
                 "snow"
               ],
               "y": [
-                7492,
-                1291
+                7492.0,
+                1291.0
               ],
               "type": "bar"
             }
@@ -31315,7 +31322,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Precip Type.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\bar_Precip Type.png"
       }
     ],
     "pie": [
@@ -31336,14 +31343,14 @@
                 "2006-04-01 07:00:00.000 +0200"
               ],
               "values": [
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0
               ],
               "type": "pie"
             }
@@ -32131,7 +32138,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Formated Date.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Formated Date.png"
       },
       {
         "column": "Summary",
@@ -32150,14 +32157,14 @@
                 "Breezy and Overcast"
               ],
               "values": [
-                2782,
-                2238,
-                1526,
-                1400,
-                709,
-                40,
-                32,
-                31
+                2782.0,
+                2238.0,
+                1526.0,
+                1400.0,
+                709.0,
+                40.0,
+                32.0,
+                31.0
               ],
               "type": "pie"
             }
@@ -32945,7 +32952,7 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Summary.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Summary.png"
       },
       {
         "column": "Precip Type",
@@ -32958,8 +32965,8 @@
                 "snow"
               ],
               "values": [
-                7492,
-                1291
+                7492.0,
+                1291.0
               ],
               "type": "pie"
             }
@@ -33747,9 +33754,11 @@
             "height": 400
           }
         },
-        "image": "C:\\Users\\smsbh\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Precip Type.png"
+        "image": "C:\\Users\\academytraining\\Desktop\\ForecastIQ-Universal-Forecasting-Platform\\reports\\eda_reports\\5\\images\\pie_Precip Type.png"
       }
-    ]
+    ],
+    "trend": null,
+    "rolling_avg": null
   },
   "total_charts": 27
 }
